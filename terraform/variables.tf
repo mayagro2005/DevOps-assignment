@@ -1,7 +1,9 @@
 variable "aws_region" {
-  default = "us-east-1"
+  description = "AWS region to deploy the EC2 instance"
+  default     = "eu-north-1"
 }
 
 variable "docker_image" {
-  default = "yourusername/java-devops-app:latest"
+  description = "Docker image to run on EC2"
+  default     = "mayagro2005/java-devops-app:latest"
 }

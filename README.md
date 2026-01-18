@@ -83,7 +83,7 @@ Verify credentials:
 
 aws sts get-caller-identity
 
-Step 3: Initialize Terraform
+## Step 3: Initialize Terraform
    Navigate to the Terraform directory:
       cd terraform
 
@@ -91,7 +91,7 @@ Step 3: Initialize Terraform
       terraform init
 
 
-Step 4: Deploy Infrastructure with Terraform
+## Step 4: Deploy Infrastructure with Terraform
 Run:
 terraform apply
 
@@ -108,7 +108,7 @@ Terraform will:
    Pull the Docker image from Docker Hub
    Run the container automatically on startup
 
-Step 5: Access the Application
+## Step 5: Access the Application
    After deployment completes, Terraform outputs:
    app_url = "http://<EC2_PUBLIC_IP>:8080"
 

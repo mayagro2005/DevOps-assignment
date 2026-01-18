@@ -49,6 +49,9 @@ This image is public and safe to use.
 
 ## Step 1: Create AWS IAM User (for Terraform)
 
+Tip: AWS credentials and Terraform are only needed to create the EC2 instance.
+- If EC2 is already running, simply push new code to GitHub.
+
 Terraform needs permissions to create AWS resources in your account.
 
 1. Login to AWS Management Console
@@ -120,4 +123,5 @@ Open the URL in your browser:
 Expected output:
    Hello from AWS DevOps Assignment!
 
-Tip: After pushing new changes to GitHub, wait a few seconds for the CI/CD pipeline to finish and the container to update. Then open the app URL in your browser to see the latest changes.
+Tip: After pushing new changes to GitHub, wait a few seconds for the CI/CD pipeline to finish and the container to update. 
+      Then open the app URL in your browser to see the latest changes.

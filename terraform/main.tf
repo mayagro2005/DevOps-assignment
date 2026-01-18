@@ -59,22 +59,30 @@ resource "aws_instance" "app" {
   instance_type = "t3.micro"
   security_groups = [aws_security_group.app_sg.name]
 
-  # User data runs on first boot
   user_data = <<-EOF
               #!/bin/bash
               # Update system
               yum update -y
-              
+
               # Install Docker
               amazon-linux-extras install docker -y
               systemctl start docker
               systemctl enable docker
-              
-              # Pull and run the container
-              docker run -d -p 8080:8080 ${var.docker_image}
+
+              # Run your app container with restart always
+              docker run -d --name java-app --restart always -p 8080:8080 mayagro2005/java-devops-app:latest
+
+              # Run Watchtower to auto-update your app container every 30 seconds
+              docker run -d \
+                --name watchtower \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                containrrr/watchtower \
+                --interval 30 \
+                java-app
               EOF
 
   tags = {
     Name = "java-devops-app"
   }
 }
+

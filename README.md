@@ -120,4 +120,4 @@ Open the URL in your browser:
 Expected output:
    Hello from AWS DevOps Assignment!
 
-Tip: After pushing new changes to GitHub, wait a few seconds for the CI/CD pipeline to finish and the container to update. Then refresh the browser to see the changes.
+Tip: After pushing new changes to GitHub, wait a few seconds for the CI/CD pipeline to finish and the container to update. Then open the app URL in your browser to see the latest changes.

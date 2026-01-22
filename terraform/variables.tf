@@ -1,6 +1,6 @@
 variable "aws_region" {
   description = "AWS region to deploy the EC2 instance"
-  default     = "eu-north-1"
+  default     = "eu-central-1"
 }
 
 variable "docker_image" {

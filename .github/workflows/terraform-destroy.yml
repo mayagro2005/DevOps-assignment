@@ -30,9 +30,10 @@ jobs:
       working-directory: ./bootstrap
 
     - name: Terraform Destroy (bootstrap)
-      run: terraform destroy -auto-approve \
-        -var "aws_region=${{ secrets.AWS_REGION }}" \
-        -var "state_bucket=maya-terraform-state-123456" \
-        -var "lock_table=terraform-locks"
       working-directory: ./bootstrap
+      run: |
+        terraform destroy -auto-approve \
+          -var "aws_region=${{ secrets.AWS_REGION }}" \
+          -var "state_bucket=maya-terraform-state-123456" \
+          -var "lock_table=terraform-locks"
 

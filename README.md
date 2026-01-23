@@ -1,127 +1,121 @@
-# Java DevOps Home Assignment
+Prerequisites
 
-## Objective
-This project demonstrates a complete DevOps workflow including:
+You only need Git installed locally.
 
-- CI/CD automation with GitHub Actions
-- Docker containerization
-- Infrastructure provisioning with Terraform
-- Deployment to AWS EC2
+No need to install Docker, Terraform, or AWS CLI — all is handled in GitHub Actions.
 
-The application is deployed automatically on an EC2 instance and exposed on port **8080**.
+Secrets already in the GitHub repo:
 
----
+AWS_ACCESS_KEY_ID
 
-## Architecture Overview
-1. Code is pushed to GitHub  
-2. GitHub Actions:
-   - Builds the Java application using Maven
-   - Runs unit tests
-   - Builds a Docker image
-   - Pushes the image to Docker Hub  
-3. Terraform provisions AWS infrastructure:
-   - EC2 instance (Amazon Linux)
-   - Security Group allowing traffic on port 8080  
-4. EC2 installs Docker and runs the application container automatically on startup
+AWS_SECRET_ACCESS_KEY
 
----
+AWS_REGION
 
-## Prerequisites
+DOCKERHUB_USERNAME
 
-Install the following tools locally:
+DOCKERHUB_TOKEN
 
-- AWS account (Free Tier is sufficient)
-- AWS CLI  
-  https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
-- Terraform  
-  https://developer.hashicorp.com/terraform/downloads
-- Git
+These are used by GitHub Actions for all deployments and infrastructure provisioning.
 
-> Docker, Java, and Maven are **not required locally**.
+Step 1: Bootstrap Terraform Backend (Manual, Only Once)
 
-Docker image used by this project:
-mayagro2005/java-devops-app:latest
+   Before the first deployment, you must create the Terraform backend:
+
+   Go to GitHub → Actions → Terraform Bootstrap
+
+   Click Run workflow manually
+
+   This workflow will create:
+
+   S3 bucket to store Terraform state
+
+   DynamoDB table for state locking
+
+   You must run this first. If you try to run the CI/CD workflow before bootstrap, you will see an error like:
+
+   Error acquiring state lock
+   ResourceNotFoundException: Requested resource not found
+   Unable to retrieve item from DynamoDB table "terraform-locks"
 
 
-This image is public and safe to use.
+   This is normal — it means Terraform backend does not exist yet.
 
----
+Step 2: CI/CD Pipeline (Runs Automatically on Push)
 
-## Step 1: Create AWS IAM User (for Terraform)
+   After bootstrap:
 
-Tip: AWS credentials and Terraform are only needed to create the EC2 instance.
-- If EC2 is already running, simply push new code to GitHub.
+   Every push to the main branch triggers CI/CD pipeline in GitHub Actions.
 
-Terraform needs permissions to create AWS resources in your account.
+   Steps performed automatically:
 
-1. Login to AWS Management Console
-2. Go to **IAM → Users → Create user**
-3. User name: `terraform-user`
-4. Select **Programmatic access**
-5. Attach permission policy:
-   - `AmazonEC2FullAccess`
-6. Create the user
-7. Save the **Access Key ID** and **Secret Access Key**
+   Checkout code
 
-> You will not be able to view them again
+   Build Java application (Maven)
 
----
+   Run unit tests
 
-## Step 2: Configure AWS Credentials Locally
+   Build Docker image
 
-Run the following command:
+   Push Docker image to Docker Hub
 
-```bash
-aws configure
+   Apply Terraform configuration (main resources: EC2 + Security Group)
 
-Enter the values:
+   Deploy Docker container to EC2
 
-AWS Access Key ID:     <YOUR_ACCESS_KEY>
-AWS Secret Access Key: <YOUR_SECRET_KEY>
-Default region name:   eu-north-1
-Default output format: json
+   You can also trigger this manually via Actions → CI/CD Pipeline → Run workflow.
 
 
-Verify credentials:
+Step 3: Access the Application
 
-aws sts get-caller-identity
+   Once deployment completes:
 
-## Step 3: Initialize Terraform
-   Navigate to the Terraform directory:
-      cd terraform
+   Go to the workflow run logs in GitHub Actions
 
-   Initialize Terraform:
-      terraform init
+   Find the Terraform apply step output in the CI/CD workflow
 
+   Look for app_url:
 
-## Step 4: Deploy Infrastructure with Terraform
-Run:
-terraform apply
-
-Type:
-
-yes
+   Outputs:
+   app_url = http://<EC2_PUBLIC_IP>:8080
 
 
-Terraform will:
+   Open this URL in your browser:
 
-   Create a Security Group (port 8080 open)
-   Launch an EC2 instance
-   Install Docker on the EC2 instance
-   Pull the Docker image from Docker Hub
-   Run the container automatically on startup
-
-## Step 5: Access the Application
-   After deployment completes, Terraform outputs:
-   app_url = "http://<EC2_PUBLIC_IP>:8080"
-
-
-Open the URL in your browser:
    http://<EC2_PUBLIC_IP>:8080
 
 
-Expected output:
+   Expected output:
+
    Hello from AWS DevOps Assignment!
 
-Tip: After pushing new changes to GitHub, wait a few seconds for the CI/CD pipeline to finish and the container to update. 
-      Then open the app URL in your browser to see the latest changes.
+
+Tip: After pushing new changes, wait a few seconds for CI/CD to finish and the container to update automatically.
+
+Step 4: Destroy Resources (Manual)
+
+   When finished or to clean up AWS:
+
+   Go to GitHub → Actions → Terraform Destroy
+
+   Click Run workflow
+
+Steps performed:
+
+   Destroys EC2 instance, Security Group, and Docker container
+
+   Deletes S3 bucket and DynamoDB table created during bootstrap
+
+   Note: Terraform cannot destroy the S3 bucket if it contains objects. The destroy workflow handles deleting objects automatically.
+   You must run this manually. Resources will not auto-delete after CI/CD runs.
+
+
+Notes & Tips
+
+Bootstrap: Run once manually before any other workflow.
+
+CI/CD: Runs automatically on main branch push, but can also be triggered manually.
+
+Destroy: Run manually when done to remove all AWS resources.
+
+app_url: Check in GitHub Actions logs in Terraform apply step of CI/CD pipeline.

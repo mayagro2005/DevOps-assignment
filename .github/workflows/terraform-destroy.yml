@@ -1,7 +1,7 @@
 name: Terraform Destroy
 
 on:
-  workflow_dispatch:   # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   destroy:
@@ -12,26 +12,26 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-
-    # --- Destroy main infrastructure ---
-    - name: Terraform Init (main)
+    # Destroy main infra (EC2, Security Groups)
+    - name: Terraform Init Main
       run: terraform init
       working-directory: ./terraform
 
-    - name: Terraform Destroy (main)
+    - name: Terraform Destroy Main
       run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
       working-directory: ./terraform
 
-    # --- Destroy bootstrap resources (S3 + DynamoDB) ---
-    - name: Terraform Init (bootstrap, ignore backend)
+    # Destroy bootstrap infra (S3 + DynamoDB)
+    - name: Terraform Init Bootstrap
       run: terraform init -reconfigure -backend=false
       working-directory: ./bootstrap
 
-    - name: Terraform Destroy (bootstrap)
-      run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
+    - name: Terraform Destroy Bootstrap
+      run: terraform destroy -auto-approve \
+          -var "aws_region=${{ secrets.AWS_REGION }}" \
+          -var "state_bucket=maya-terraform-state-123456" \
+          -var "lock_table=terraform-locks"
       working-directory: ./bootstrap

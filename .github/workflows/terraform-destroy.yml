@@ -28,8 +28,8 @@ jobs:
       working-directory: ./terraform
 
     # --- Destroy bootstrap resources (S3 + DynamoDB) ---
-    - name: Terraform Init (bootstrap)
-      run: terraform init
+    - name: Terraform Init (bootstrap, ignore backend)
+      run: terraform init -reconfigure -backend=false
       working-directory: ./bootstrap
 
     - name: Terraform Destroy (bootstrap)

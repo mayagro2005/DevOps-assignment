@@ -1,39 +1,40 @@
 name: Terraform Destroy
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # Can run manually from GitHub UI
 
 jobs:
   destroy:
     runs-on: ubuntu-latest
+
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_REGION:           ${{ secrets.AWS_REGION }}
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: hashicorp/setup-terraform@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # Destroy main infra (EC2, Security Groups)
-    - name: Terraform Init Main
-      run: terraform init
-      working-directory: ./terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Terraform Destroy Main
-      run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
-      working-directory: ./terraform
+      # --- Destroy main infrastructure (EC2, Security Groups, etc.) ---
+      - name: Terraform Init Main
+        run: terraform init
+        working-directory: ./terraform
 
-    # Destroy bootstrap infra (S3 + DynamoDB)
-    - name: Terraform Init Bootstrap
-      run: terraform init -reconfigure -backend=false
-      working-directory: ./bootstrap
+      - name: Terraform Destroy Main
+        run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
+        working-directory: ./terraform
 
-    - name: Terraform Destroy (bootstrap)
-      working-directory: ./bootstrap
-      run: |
-        terraform destroy -auto-approve \
-          -var "aws_region=${{ secrets.AWS_REGION }}" \
-          -var "state_bucket=maya-terraform-state-123456" \
-          -var "lock_table=terraform-locks"
+      # --- Destroy bootstrap resources (S3 + DynamoDB) using AWS CLI ---
+      - name: Delete DynamoDB Table
+        run: |
+          echo "Deleting DynamoDB table: terraform-locks"
+          aws dynamodb delete-table --table-name terraform-locks --region $AWS_REGION
 
+      - name: Delete S3 Backend Bucket
+        run: |
+          echo "Deleting S3 bucket: maya-terraform-state-123456"
+          aws s3 rb s3://maya-terraform-state-123456 --force

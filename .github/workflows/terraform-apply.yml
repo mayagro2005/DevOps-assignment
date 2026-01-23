@@ -1,8 +1,11 @@
 name: CI/CD Pipeline
 
+
 on:
   push:
-    branches: ["main"]
+    branches: ["main"]          # Runs automatically on push to main
+  workflow_dispatch:             # Allows manual trigger from GitHub UI
+
 
 jobs:
   deploy:

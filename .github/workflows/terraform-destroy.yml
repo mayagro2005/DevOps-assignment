@@ -34,7 +34,27 @@ jobs:
           echo "Deleting DynamoDB table: terraform-locks"
           aws dynamodb delete-table --table-name terraform-locks --region $AWS_REGION
 
-      - name: Delete S3 Backend Bucket
+      - name: Delete S3 Backend Bucket (all versions)
         run: |
-          echo "Deleting S3 bucket: maya-terraform-state-123456"
-          aws s3 rb s3://maya-terraform-state-123456 --force
+          BUCKET="maya-terraform-state-123456"
+          echo "Deleting all objects and versions in S3 bucket: $BUCKET"
+
+          # List all object versions and delete them
+          aws s3api list-object-versions --bucket $BUCKET --query 'Versions[].{Key:Key,VersionId:VersionId}' --output json | \
+          jq -c '.[]' | while read obj; do
+            KEY=$(echo $obj | jq -r '.Key')
+            VID=$(echo $obj | jq -r '.VersionId')
+            aws s3api delete-object --bucket $BUCKET --key "$KEY" --version-id "$VID"
+          done
+
+          # List all delete markers and delete them
+          aws s3api list-object-versions --bucket $BUCKET --query 'DeleteMarkers[].{Key:Key,VersionId:VersionId}' --output json | \
+          jq -c '.[]' | while read obj; do
+            KEY=$(echo $obj | jq -r '.Key')
+            VID=$(echo $obj | jq -r '.VersionId')
+            aws s3api delete-object --bucket $BUCKET --key "$KEY" --version-id "$VID"
+          done
+
+          # Finally remove the bucket
+          aws s3 rb s3://$BUCKET
+

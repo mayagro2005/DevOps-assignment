@@ -18,11 +18,20 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
 
-    - name: Terraform Init
+    # --- Destroy main infrastructure ---
+    - name: Terraform Init (main)
       run: terraform init
       working-directory: ./terraform
 
-    - name: Terraform Destroy
+    - name: Terraform Destroy (main)
       run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
       working-directory: ./terraform
 
+    # --- Destroy bootstrap resources (S3 + DynamoDB) ---
+    - name: Terraform Init (bootstrap)
+      run: terraform init
+      working-directory: ./bootstrap
+
+    - name: Terraform Destroy (bootstrap)
+      run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
+      working-directory: ./bootstrap

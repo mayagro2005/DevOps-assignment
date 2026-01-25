@@ -87,7 +87,7 @@ http://<EC2_PUBLIC_IP>:8080
 
 **Expected output:**
 
-Hello from AWS DevOps Assignment!
+Hello from AWS DevOps and CI/CD Assignment!
 
 
 > **Tip:** After pushing new changes, wait a few seconds for CI/CD to finish and the container to update automatically.

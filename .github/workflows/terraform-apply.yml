@@ -1,27 +1,27 @@
 name: Terraform Apply
 
-
 on:
   push:
     branches: ["main"]          # Runs automatically on push to main
   workflow_dispatch:             # Allows manual trigger from GitHub UI
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION:           ${{ secrets.AWS_REGION }}
-      DOCKERHUB_USERNAME:   ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN:      ${{ secrets.DOCKERHUB_TOKEN }}
+    permissions:               # <-- OIDC permissions
+      id-token: write           # GitHub can request OIDC token
+      contents: read            # Workflow can read repo files
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::269809345657:role/github-actions-terraform
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Check S3 backend exists
         run: |
@@ -38,7 +38,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Apply (Main)
-        run: terraform apply -auto-approve -var="aws_region=${{ secrets.AWS_REGION }}"
+        run: terraform apply -auto-approve -var="aws_region=eu-central-1"
         working-directory: ./terraform
 
       - name: Build Docker Image

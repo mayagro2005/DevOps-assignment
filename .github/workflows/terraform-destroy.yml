@@ -1,38 +1,43 @@
 name: Terraform Destroy
 
 on:
-  workflow_dispatch:   # Can run manually from GitHub UI
+  workflow_dispatch:
 
 jobs:
   destroy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION:           ${{ secrets.AWS_REGION }}
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::269809345657:role/github-actions-terraform
+          aws-region: eu-central-1
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      # --- Destroy main infrastructure (EC2, Security Groups, etc.) ---
+      # --- Destroy main infrastructure ---
       - name: Terraform Init Main
         run: terraform init
         working-directory: ./terraform
 
       - name: Terraform Destroy Main
-        run: terraform destroy -auto-approve -var "aws_region=${{ secrets.AWS_REGION }}"
+        run: terraform destroy -auto-approve -var "aws_region=eu-central-1"
         working-directory: ./terraform
 
-      # --- Destroy bootstrap resources (S3 + DynamoDB) using AWS CLI ---
+      # --- Delete bootstrap resources (S3 + DynamoDB) ---
       - name: Delete DynamoDB Table
         run: |
           echo "Deleting DynamoDB table: terraform-locks"
-          aws dynamodb delete-table --table-name terraform-locks --region $AWS_REGION
+          aws dynamodb delete-table --table-name terraform-locks --region eu-central-1
 
       - name: Delete S3 Backend Bucket (all versions)
         run: |
@@ -57,4 +62,3 @@ jobs:
 
           # Finally remove the bucket
           aws s3 rb s3://$BUCKET
-

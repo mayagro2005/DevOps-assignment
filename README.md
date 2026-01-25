@@ -1,11 +1,11 @@
-# 🟢 Java DevOps Assignment
+# 🟢 Java DevOps Assignment (OIDC Edition)
 
 This project demonstrates a **full DevOps workflow**:
 
-- CI/CD with GitHub Actions  
-- Docker containerization  
-- AWS infrastructure provisioning with Terraform  
-- Automatic deployment to EC2  
+- CI/CD with **GitHub Actions**  
+- **Docker** containerization  
+- **AWS** infrastructure provisioning with **Terraform**  
+- Automatic deployment to **EC2**  
 
 The application runs on **port 8080** and updates automatically whenever code is pushed to GitHub.
 
@@ -19,13 +19,10 @@ You only need **Git** installed locally.
 
 **Secrets are already configured in this GitHub repository:**
 
-- `AWS_ACCESS_KEY_ID`  
-- `AWS_SECRET_ACCESS_KEY`  
-- `AWS_REGION`  
 - `DOCKERHUB_USERNAME`  
 - `DOCKERHUB_TOKEN`  
 
-These secrets are used by GitHub Actions for all deployments and infrastructure provisioning.
+> AWS credentials are now obtained automatically via **GitHub OIDC**. No AWS keys are stored in the repo.
 
 ---
 
@@ -38,14 +35,13 @@ Before the first deployment, you **must create the Terraform backend**:
 
 This workflow will create:  
 
-- S3 bucket to store Terraform state  
-- DynamoDB table for state locking  
+- **S3 bucket** to store Terraform state  
+- **DynamoDB table** for state locking  
 
 > **Important:** You must run this first.  
 > If you try to run the CI/CD workflow before bootstrap, you will see an error like:
 
-   Backend S3 bucket does not exist! Run bootstrap workflow first.
-
+Backend S3 bucket does not exist! Run bootstrap workflow first.
 
 This is normal — it means the Terraform backend does not exist yet.
 
@@ -70,6 +66,8 @@ After bootstrap is complete:
 > You can also **trigger this manually** via:  
 > `Actions → CI/CD Pipeline → Run workflow`
 
+**Note:** This workflow uses **GitHub OIDC** to assume the IAM role — no AWS keys are needed. Any collaborator with push access can run it safely.
+
 ---
 
 ## 3️⃣ Access the Application
@@ -77,18 +75,28 @@ After bootstrap is complete:
 Once deployment is complete:  
 
 1. Go to **GitHub Actions → CI/CD pipeline run logs**  
-2. Find the **Terraform apply step output**  
+2. Find the **Terraform Apply** step output  
 3. Look for `app_url`:
 
-   Outputs:
-   app_url = http://<EC2_PUBLIC_IP>:8080
+Outputs:
+app_url = http://<EC2_PUBLIC_IP>:8080
+
+kotlin
+Copy code
 
 4. Open this URL in your browser:  
-   http://<EC2_PUBLIC_IP>:8080
 
-   **Expected output:**
-   Hello from AWS DevOps Assignment!
+http://<EC2_PUBLIC_IP>:8080
 
+lua
+Copy code
+
+**Expected output:**
+
+Hello from AWS DevOps Assignment!
+
+markdown
+Copy code
 
 > **Tip:** After pushing new changes, wait a few seconds for CI/CD to finish and the container to update automatically.
 
@@ -116,4 +124,6 @@ When finished or to clean up AWS:
 - **Bootstrap:** Run **once manually** before any other workflow  
 - **CI/CD:** Runs automatically on `main` branch push, but can also be triggered manually  
 - **Destroy:** Run manually when done to remove all AWS resources  
-- **app_url:** Check in **GitHub Actions logs → Terraform apply step** of the CI/CD pipeline
+- **OIDC:** All workflows now use **temporary AWS credentials**; no static secrets needed  
+- **app_url:** Check in **GitHub Actions logs → Terraform apply step** of the CI/CD pipeline  
+- **Repo sharing:** Anyone with push access can safely trigger the workflows; AWS credentials are temporary and bound to this repo

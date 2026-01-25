@@ -7,19 +7,26 @@ jobs:
   bootstrap:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION:           ${{ secrets.AWS_REGION }}
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: hashicorp/setup-terraform@v2
+      - uses: actions/checkout@v4
 
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ./bootstrap
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::269809345657:role/github-actions-terraform
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
-      working-directory: ./bootstrap
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./bootstrap
+
+      - name: Terraform Apply (Bootstrap)
+        run: terraform apply -auto-approve
+        working-directory: ./bootstrap

@@ -68,7 +68,6 @@ After bootstrap is complete:
 
 **Note:** This workflow uses **GitHub OIDC** to assume the IAM role — no AWS keys are needed. Any collaborator with push access can run it safely.
 
-Tip: After pushing new changes, wait a few seconds for the CI/CD workflow to complete and for the Docker container to refresh on the EC2 instance before accessing the app.
 ---
 
 ## 3️⃣ Access the Application
@@ -82,15 +81,9 @@ Once deployment is complete:
 Outputs:
 app_url = http://<EC2_PUBLIC_IP>:8080
 
-kotlin
-Copy code
-
 4. Open this URL in your browser:  
 
 http://<EC2_PUBLIC_IP>:8080
-
-lua
-Copy code
 
 **Expected output:**
 

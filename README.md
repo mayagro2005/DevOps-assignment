@@ -87,7 +87,7 @@ http://<EC2_PUBLIC_IP>:8080
 
 **Expected output:**
 
-Hello from AWS DevOps and CI/CD Assignment!
+Hello from AWS DevOps Assignment!
 
 
 > **Tip:** After pushing new changes, wait a few seconds for CI/CD to finish and the container to update automatically.
@@ -106,7 +106,7 @@ When finished or to clean up AWS:
 - Destroys EC2 instance, Security Group, and Docker container  
 - Deletes S3 bucket and DynamoDB table created during bootstrap  
 
-> **Note:** Terraform cannot destroy an S3 bucket if it contains objects. The destroy workflow handles deleting objects automatically.  
+> **Note:** The destroy workflow handles deleting objects automatically.  
 > You **must run this manually** — resources will **not** auto-delete after CI/CD runs.
 
 ---

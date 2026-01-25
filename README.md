@@ -68,6 +68,7 @@ After bootstrap is complete:
 
 **Note:** This workflow uses **GitHub OIDC** to assume the IAM role — no AWS keys are needed. Any collaborator with push access can run it safely.
 
+Tip: After pushing new changes, wait a few seconds for the CI/CD workflow to complete and for the Docker container to refresh on the EC2 instance before accessing the app.
 ---
 
 ## 3️⃣ Access the Application
@@ -95,8 +96,6 @@ Copy code
 
 Hello from AWS DevOps Assignment!
 
-markdown
-Copy code
 
 > **Tip:** After pushing new changes, wait a few seconds for CI/CD to finish and the container to update automatically.
 

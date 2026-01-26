@@ -69,8 +69,12 @@ resource "aws_instance" "app" {
               systemctl start docker
               systemctl enable docker
 
+              # Login to Docker Hub
+              echo "${var.docker_password}" | docker login -u "${var.docker_username}" --password-stdin
+
+
               # Run your app container with restart always
-              docker run -d --name java-app --restart always -p 8080:8080 mayagro2005/java-devops-app:latest
+              docker run -d --name java-app --restart always -p 8080:8080 ${var.docker_image}
 
               # Run Watchtower to auto-update your app container every 30 seconds
               docker run -d \

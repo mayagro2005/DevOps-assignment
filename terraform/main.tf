@@ -70,7 +70,7 @@ resource "aws_instance" "app" {
               systemctl enable docker
 
               # Login to Docker Hub
-              echo "${var.docker_password}" | docker login -u "${var.docker_username}" --password-stdin
+              echo "${var.docker_token}" | docker login -u "${var.docker_username}" --password-stdin
 
 
               # Run your app container with restart always

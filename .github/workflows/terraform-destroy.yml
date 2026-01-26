@@ -26,7 +26,7 @@ jobs:
 
       # --- Destroy main infrastructure ---
       - name: Terraform Init Main
-        run: terraform init
+        run: terraform init -reconfigure
         working-directory: ./terraform
 
       - name: Terraform Destroy Main

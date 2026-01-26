@@ -34,12 +34,9 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        run: |
-          terraform init \
-            -backend-config="bucket=maya-terraform-state-123456" \
-            -backend-config="key=env/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
-            -backend-config="dynamodb_table=terraform-locks"
+        run: terraform init -reconfigure
+        working-directory: ./terraform
+
 
       - name: Build Docker Image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${{ github.sha }} .

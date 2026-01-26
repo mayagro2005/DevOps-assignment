@@ -37,15 +37,21 @@ jobs:
         run: terraform init
         working-directory: ./terraform
 
-      - name: Terraform Apply (Main)
-        run: terraform apply -auto-approve -var="aws_region=eu-central-1"
-        working-directory: ./terraform
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${{ github.sha }} .
 
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${{ github.sha }}
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+            -var="aws_region=eu-central-1" \
+            -var="docker_image=${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${{ github.sha }}" \
+            -var="docker_username=${{ secrets.DOCKERHUB_USERNAME }}" \
+            -var="docker_password=${{ secrets.DOCKERHUB_TOKEN }}"
+        working-directory: ./terraform  

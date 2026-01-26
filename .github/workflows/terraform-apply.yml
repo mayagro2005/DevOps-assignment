@@ -54,7 +54,7 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="aws_region=eu-central-1" \
-            -var="docker_image=${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${{ github.sha }}" \
+            -var="docker_image=${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest" \
             -var="docker_username=${{ secrets.DOCKERHUB_USERNAME }}" \
             -var="docker_token=${{ secrets.DOCKERHUB_TOKEN }}"
         working-directory: ./terraform  

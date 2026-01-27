@@ -23,7 +23,7 @@ COPY app/src ./src
 
 # Create a file inside the app that contains the GitHub SHA
 # This guarantees the build output changes on every CI run
-RUN echo "$BUILD_ID" > src/main/resources/build.txt
+RUN mkdir -p src/main/resources && echo "$BUILD_ID" > src/main/resources/build.txt
 
 # Compile the project and package it as an executable Spring Boot JAR
 RUN mvn clean package spring-boot:repackage -DskipTests

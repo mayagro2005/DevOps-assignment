@@ -29,6 +29,11 @@ jobs:
         run: terraform init -reconfigure
         working-directory: ./terraform
 
+      
+      - name: Force unlock Terraform state (optional)
+        run: terraform force-unlock -force 25ec7cf7-292e-8698-6568-b92d12d40391
+        working-directory: ./terraform
+
       - name: Terraform Destroy Main
         run: terraform destroy -auto-approve -var "aws_region=eu-central-1"
         working-directory: ./terraform

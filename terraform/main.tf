@@ -59,37 +59,63 @@ resource "aws_instance" "app" {
   instance_type = "t3.micro"
   security_groups = [aws_security_group.app_sg.name]
 
-   user_data = <<-EOF
+  # EC2 Instance
+resource "aws_instance" "app" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = "t3.micro"
+  security_groups = [aws_security_group.app_sg.name]
+
+  user_data = <<-EOF
               #!/bin/bash
+              set -e
+
+              # Update system
               yum update -y
+
+              # Install Docker
               amazon-linux-extras install docker -y
               systemctl start docker
               systemctl enable docker
 
-              # Login to Docker Hub
+              # Login to Docker Hub (for both docker and Watchtower)
               echo "${var.docker_token}" | docker login -u "${var.docker_username}" --password-stdin
 
-              # Stop and remove old app container
+              # Remove old app container if exists
               docker stop java-app || true
               docker rm java-app || true
 
-              # Run app container
-              docker run -d --name java-app --restart always -p 8080:8080 ${var.docker_username}/java-devops-app:latest
+              # Pull latest image explicitly
+              docker pull ${var.docker_username}/java-devops-app:latest
 
-              # Stop and remove old Watchtower container
+              # Run app container
+              docker run -d \
+                --name java-app \
+                --restart always \
+                -p 8080:8080 \
+                ${var.docker_username}/java-devops-app:latest
+
+              # Remove old Watchtower if exists
               docker stop watchtower || true
               docker rm watchtower || true
 
-              # Run Watchtower to monitor app container for updates every 30 seconds
+              # Run Watchtower with Docker Hub credentials
               docker run -d \
                 --name watchtower \
                 --restart always \
                 -v /var/run/docker.sock:/var/run/docker.sock \
+                -e REPO_USER=${var.docker_username} \
+                -e REPO_PASS=${var.docker_token} \
                 containrrr/watchtower \
                 --interval 30 \
                 --cleanup \
                 java-app
               EOF
+
+  tags = {
+    Name = "java-devops-app"
+  }
+}
+
 
   tags = {
     Name = "java-devops-app"

@@ -59,12 +59,9 @@ resource "aws_instance" "app" {
   instance_type = "t3.micro"
   security_groups = [aws_security_group.app_sg.name]
 
-  user_data = <<-EOF
+   user_data = <<-EOF
               #!/bin/bash
-              # Update system
               yum update -y
-
-              # Install Docker
               amazon-linux-extras install docker -y
               systemctl start docker
               systemctl enable docker
@@ -72,11 +69,18 @@ resource "aws_instance" "app" {
               # Login to Docker Hub
               echo "${var.docker_token}" | docker login -u "${var.docker_username}" --password-stdin
 
+              # Stop and remove old app container
+              docker stop java-app || true
+              docker rm java-app || true
 
-              # Run your app container with restart always
+              # Run app container
               docker run -d --name java-app --restart always -p 8080:8080 ${var.docker_username}/java-devops-app:latest
 
-              # Run Watchtower to auto-update your app container every 30 seconds
+              # Stop and remove old Watchtower container
+              docker stop watchtower || true
+              docker rm watchtower || true
+
+              # Run Watchtower to monitor app container for updates every 30 seconds
               docker run -d \
                 --name watchtower \
                 --restart always \

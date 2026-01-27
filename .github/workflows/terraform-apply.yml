@@ -38,15 +38,24 @@ jobs:
         working-directory: ./terraform
 
 
-      - name: Build Docker Image (no cache)
-        run: docker build --no-cache -t ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest .
-
+      - name: Build Docker Image with SHA tag
+        run: |
+          IMAGE_TAG=${GITHUB_SHA}
+          echo "Building Docker image with tag $IMAGE_TAG"
+          docker build --no-cache -t ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:$IMAGE_TAG .
 
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
+      - name: Push SHA-tagged Docker Image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${GITHUB_SHA}
+
+      - name: Tag and Push latest for Watchtower
+        run: |
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${GITHUB_SHA} ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
+
 
       - name: Terraform Apply
         run: |

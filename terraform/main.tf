@@ -74,7 +74,7 @@ resource "aws_instance" "app" {
 
 
               # Run your app container with restart always
-              docker run -d --name java-app --restart always -p 8080:8080 ${var.docker_image}
+              docker run -d --name java-app --restart always -p 8080:8080 ${var.docker_username}/java-devops-app:latest
 
               # Run Watchtower to auto-update your app container every 30 seconds
               docker run -d \

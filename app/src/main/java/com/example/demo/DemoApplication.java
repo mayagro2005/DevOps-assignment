@@ -15,6 +15,6 @@ public class DemoApplication {
 
     @GetMapping("/")
     public String hello() {
-        return "Hello from AWS DevOps and CICD Assignment!";
+        return "Hello from AWS DevOps Assignment!";
     }
 }

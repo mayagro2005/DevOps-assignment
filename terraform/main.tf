@@ -79,9 +79,11 @@ resource "aws_instance" "app" {
               # Run Watchtower to auto-update your app container every 30 seconds
               docker run -d \
                 --name watchtower \
+                --restart always \
                 -v /var/run/docker.sock:/var/run/docker.sock \
                 containrrr/watchtower \
                 --interval 30 \
+                --cleanup \
                 java-app
               EOF
 

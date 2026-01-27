@@ -50,10 +50,6 @@ jobs:
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
 
-      - name: Tag and Push latest for Watchtower
-        run: |
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:${GITHUB_SHA} ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/java-devops-app:latest
 
 
       - name: Terraform Apply
